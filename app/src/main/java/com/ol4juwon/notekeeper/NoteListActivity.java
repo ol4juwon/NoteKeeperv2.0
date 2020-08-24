@@ -47,6 +47,8 @@ public class NoteListActivity extends AppCompatActivity {
         super.onResume();
       //  mAdapterNotes.notifyDataSetChanged();
         mNoteRecyclerAdapter.notifyDataSetChanged();
+    // this let's the recycler view know that the data set has changed and to be updated as required.
+
     }
 
     private void initializeDisplayContent() {
