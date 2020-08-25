@@ -73,8 +73,9 @@ public class NoteActivity extends AppCompatActivity {
     }
 
     private void saveOriginalNoteValues() {
-        if(mIsNewNote)
+        if(mIsNewNote) {
             return;
+        }
         mViewlModel.mOriginalCourseId = mNote.getCourse().getCourseId();
         mViewlModel.mOriginalNoteTitle = mNote.getTitle();
         mViewlModel.mOriginalNoteText = mNote.getText();
@@ -100,6 +101,15 @@ public class NoteActivity extends AppCompatActivity {
         mNote.setCourse(course);
         mNote.setTitle(mViewlModel.mOriginalNoteTitle);
         mNote.setText(mViewlModel.mOriginalNoteText);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem item  = menu.findItem(R.id.action_next);
+        int lastIndexOf = DataManager.getInstance().getNotes().size() - 1 ;
+        item.setEnabled(mNotePosition < lastIndexOf);
+
+        return super.onPrepareOptionsMenu(menu);
     }
 
     private void saveNote() {
@@ -160,9 +170,22 @@ public class NoteActivity extends AppCompatActivity {
             return true;
         }else if(id == R.id.action_cancel){
             cancelNote();
+        }else if(id == R.id.action_next){
+            moveNext();
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void moveNext() {
+        saveNote();
+        ++mNotePosition;
+        mNote = DataManager.getInstance().getNotes().get(mNotePosition);
+
+        saveOriginalNoteValues();
+        displayNote(mSpinnerCourses,mTextNoteTitle,mTextNoteText);
+        invalidateOptionsMenu();
+
     }
 
     private void cancelNote() {
