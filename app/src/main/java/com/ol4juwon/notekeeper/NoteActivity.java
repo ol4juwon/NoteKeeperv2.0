@@ -105,9 +105,11 @@ public class NoteActivity extends AppCompatActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        MenuItem item  = menu.findItem(R.id.action_next);
+        MenuItem nextItem  = menu.findItem(R.id.action_next);
+        MenuItem prevItem = menu.findItem(R.id.action_previous);
         int lastIndexOf = DataManager.getInstance().getNotes().size() - 1 ;
-        item.setEnabled(mNotePosition < lastIndexOf);
+        prevItem.setEnabled(mNotePosition > 0);
+        nextItem.setEnabled(mNotePosition < lastIndexOf);
 
         return super.onPrepareOptionsMenu(menu);
     }
@@ -172,9 +174,21 @@ public class NoteActivity extends AppCompatActivity {
             cancelNote();
         }else if(id == R.id.action_next){
             moveNext();
+        }else if (id == R.id.action_previous){
+            movePrevious();
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void movePrevious() {
+        saveNote();
+        --mNotePosition;
+        mNote = DataManager.getInstance().getNotes().get(mNotePosition);
+
+        saveOriginalNoteValues();
+        displayNote(mSpinnerCourses,mTextNoteTitle,mTextNoteText);
+        invalidateOptionsMenu();
     }
 
     private void moveNext() {
