@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
-import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -29,6 +28,8 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private NoteRecyclerAdapter mNoteRecyclerAdapter;
     private AppBarConfiguration mAppBarConfiguration;
+    private RecyclerView mRecyclerItems;
+    private LinearLayoutManager mNotesLayoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow)
+                R.id.nav_notes, R.id.nav_courses, R.id.nav_share)
                 .setDrawerLayout(drawer)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
@@ -85,19 +86,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void initializeDisplayContent() {
 
         //create a variable for list notes
-        final RecyclerView recyclerNotes = (RecyclerView) findViewById(R.id.list_items);
+        mRecyclerItems = (RecyclerView) findViewById(R.id.list_items);
 //        create a new layout manager to manager the recycler view
-        final LinearLayoutManager notesLayoutManager = new LinearLayoutManager(this);
+        mNotesLayoutManager = new LinearLayoutManager(this);
 //        set the recycler view to use the new layout manager
-        recyclerNotes.setLayoutManager(notesLayoutManager);
 
         //get notes to display
 
         List<NoteInfo> notes = DataManager.getInstance().getNotes();
         mNoteRecyclerAdapter = new NoteRecyclerAdapter(this,notes);
-        recyclerNotes.setAdapter(mNoteRecyclerAdapter);
+        displayNotes();
 
     }
+
+    private void displayNotes() {
+        mRecyclerItems.setLayoutManager(mNotesLayoutManager);
+        mRecyclerItems.setAdapter(mNoteRecyclerAdapter);
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        Menu menu = navigationView.getMenu();
+        menu.findItem(R.id.nav_notes).setChecked(true);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -117,12 +126,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         int id = item.getItemId();
 
-        if (id == R.id.nav_home) {
-            handleSelection("Home");
+        if (id == R.id.nav_notes) {
+            displayNotes();
 
-        } else if (id == R.id.nav_gallery) {
+        } else if (id == R.id.nav_courses) {
 
-        } else if (id == R.id.nav_slideshow) {
+            handleSelection("Courses");
+
+        } else if (id == R.id.nav_share) {
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -131,8 +142,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
-    private void handleSelection(String send) {
+    private void handleSelection(String message) {
         View view = findViewById(R.id.list_items);
-        Snackbar.make(view,send,Snackbar.LENGTH_LONG).show();
+        Snackbar.make(view,message,Snackbar.LENGTH_LONG).show();
     }
 }
