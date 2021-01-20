@@ -21,4 +21,12 @@
     <string name="menu_home">Home</string>
     <string name="menu_gallery">Gallery</string>
     <string name="menu_slideshow">Slideshow</string>
+    <string name="note_title">Note Title</string>
+    <string name="note_text">Note Text</string>
+    <string name="share">Share</string>
+    <string name="courses">Courses</string>
+    <string name="notes">Notes</string>
+    <string name="send">Send</string>
+    <string name="nav_share_message">Share</string>
+    <string name="nav_send_message">Send</string>
 </resources>

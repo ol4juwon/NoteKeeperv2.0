@@ -20,6 +20,7 @@ import androidx.navigation.ui.NavigationUI;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,9 +28,12 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private NoteRecyclerAdapter mNoteRecyclerAdapter;
+    private CourseRecyclerAdapter mCourseRecyclerAdapter;
     private AppBarConfiguration mAppBarConfiguration;
     private RecyclerView mRecyclerItems;
     private LinearLayoutManager mNotesLayoutManager;
+    private GridLayoutManager mCourseLayoutManager;
+    private NoteKeeperOpenHelper mDbOpenHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +41,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        mDbOpenHelper = new NoteKeeperOpenHelper(this);
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -74,6 +80,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
+
+    @Override
+    protected void onDestroy() {
+        mDbOpenHelper.close();
+        super.onDestroy();
+
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -90,21 +104,36 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 //        create a new layout manager to manager the recycler view
         mNotesLayoutManager = new LinearLayoutManager(this);
 //        set the recycler view to use the new layout manager
+        mCourseLayoutManager = new GridLayoutManager(this,
+                getResources().getInteger(R.integer.course_gird_span));
 
         //get notes to display
 
         List<NoteInfo> notes = DataManager.getInstance().getNotes();
         mNoteRecyclerAdapter = new NoteRecyclerAdapter(this,notes);
+        List<CourseInfo> course = DataManager.getInstance().getCourses();
+        mCourseRecyclerAdapter = new CourseRecyclerAdapter(this,course);
         displayNotes();
+
 
     }
 
     private void displayNotes() {
         mRecyclerItems.setLayoutManager(mNotesLayoutManager);
         mRecyclerItems.setAdapter(mNoteRecyclerAdapter);
+        selectNavigationMenuItem(R.id.nav_notes);
+    }
+
+    private void selectNavigationMenuItem(int p) {
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         Menu menu = navigationView.getMenu();
-        menu.findItem(R.id.nav_notes).setChecked(true);
+        menu.findItem(p).setChecked(true);
+    }
+
+    private void displayCourses(){
+        mRecyclerItems.setLayoutManager(mCourseLayoutManager);
+        mRecyclerItems.setAdapter(mCourseRecyclerAdapter);
+        selectNavigationMenuItem(R.id.nav_courses);
     }
 
     @Override
@@ -131,9 +160,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         } else if (id == R.id.nav_courses) {
 
-            handleSelection("Courses");
+            displayCourses();
 
         } else if (id == R.id.nav_share) {
+            handleSelection(R.string.nav_share_message);
+        }else if (id == R.id.nav_send){
+            handleSelection(R.string.nav_send_message);
+
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -142,8 +175,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
-    private void handleSelection(String message) {
+    private void handleSelection(int message_id) {
         View view = findViewById(R.id.list_items);
-        Snackbar.make(view,message,Snackbar.LENGTH_LONG).show();
+        Snackbar.make(view,message_id,Snackbar.LENGTH_LONG).show();
     }
 }
