@@ -1,6 +1,8 @@
 package com.ol4juwon.notekeeper;
 
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -98,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void initializeDisplayContent() {
+        DataManager.loadFromDatabase(mDbOpenHelper);
 
         //create a variable for list notes
         mRecyclerItems = (RecyclerView) findViewById(R.id.list_items);
@@ -121,6 +124,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void displayNotes() {
         mRecyclerItems.setLayoutManager(mNotesLayoutManager);
         mRecyclerItems.setAdapter(mNoteRecyclerAdapter);
+
+
         selectNavigationMenuItem(R.id.nav_notes);
     }
 

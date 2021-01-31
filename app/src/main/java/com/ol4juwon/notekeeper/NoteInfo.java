@@ -8,6 +8,27 @@ public final class NoteInfo implements Parcelable {
     private String mTitle;
     private String mText;
 
+    public NoteInfo(int id, CourseInfo course, String title, String text) {
+        mCourse = course;
+        mTitle = title;
+        mText = text;
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public static Creator<NoteInfo> getCREATOR() {
+        return CREATOR;
+    }
+
+    private int id;
+
     public NoteInfo(CourseInfo course, String title, String text) {
         mCourse = course;
         mTitle = title;

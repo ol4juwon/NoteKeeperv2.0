@@ -1,9 +1,17 @@
 package com.ol4juwon.notekeeper;
 
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
+
+import com.ol4juwon.notekeeper.NoteKeeperDatabaseContract.CourseInfoEntry;
+import com.ol4juwon.notekeeper.NoteKeeperDatabaseContract.NoteInfoEntry;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class DataManager {
+    private static final String TAG = "1";
     private static DataManager ourInstance = null;
 
     private List<CourseInfo> mCourses = new ArrayList<>();
@@ -12,18 +20,90 @@ public class DataManager {
     public static DataManager getInstance() {
         if(ourInstance == null) {
             ourInstance = new DataManager();
-            ourInstance.initializeCourses();
-            ourInstance.initializeExampleNotes();
+
+//            ourInstance.initializeCourses();
+//            ourInstance.initializeExampleNotes();
         }
         return ourInstance;
     }
 
+    public static void loadFromDatabase(NoteKeeperOpenHelper mDbHelper){
+
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+
+        //Columns to be queried
+        final String[] courseColumns = {
+                CourseInfoEntry.COLUMN_COURSE_ID,
+                CourseInfoEntry.COLUMN_COURSE_TITLE};
+
+        final String[] noteColumns = {
+                NoteInfoEntry._ID,
+                NoteInfoEntry.COLUMN_NOTE_TITLE,
+                NoteInfoEntry.COLUMN_NOTE_TEXT,
+                NoteInfoEntry.COLUMN_COURSE_ID,};
+
+        final String noteOrderBy = CourseInfoEntry.COLUMN_COURSE_ID+","+NoteInfoEntry.COLUMN_NOTE_TITLE;
+
+        //query for courseInfo
+        final Cursor courseCursor = db.query(CourseInfoEntry.TABLE_NAME, courseColumns, null, null, null, null, CourseInfoEntry.COLUMN_COURSE_TITLE+" ASC");
+        loadCoursesFromDatabase(courseCursor);
+        //query for noteInfo
+        final Cursor noteCursor = db.query(NoteInfoEntry.TABLE_NAME, noteColumns, null, null, null, null, noteOrderBy);
+        loadNotesFromDatabase(noteCursor);
+
+    }
+
+    private static void loadNotesFromDatabase(Cursor noteCursor) {
+        int courseIDPos  = noteCursor.getColumnIndex(NoteInfoEntry.COLUMN_COURSE_ID);
+        int noteTitlePos = noteCursor.getColumnIndex(NoteInfoEntry.COLUMN_NOTE_TITLE);
+        int noteTextPos = noteCursor.getColumnIndex(NoteInfoEntry.COLUMN_NOTE_TEXT);
+        int idPos = noteCursor.getColumnIndex(NoteInfoEntry._ID);
+
+        DataManager dm = getInstance();
+        dm.mNotes.clear();
+
+        while (noteCursor.moveToNext()){
+            String courseId = noteCursor.getString(courseIDPos);
+            String noteTitle = noteCursor.getString(noteTitlePos);
+            String noteText = noteCursor.getString(noteTextPos);
+            int id  = noteCursor.getInt(idPos);
+
+            //get course associated to note
+            CourseInfo courseNote = dm.getCourse(courseId);
+            Log.i( TAG,"loadNotesFromDatabase: "+courseId);
+
+            //load note
+            NoteInfo note = new NoteInfo(id,courseNote,noteTitle,noteText);
+            dm.mNotes.add(note);
+        }
+        noteCursor.close();
+    }
+
+    private static void loadCoursesFromDatabase(Cursor courseCursor) {
+        int courseIdPos = courseCursor.getColumnIndex(CourseInfoEntry.COLUMN_COURSE_ID);
+        int courseTitlePos = courseCursor.getColumnIndex(CourseInfoEntry.COLUMN_COURSE_TITLE);
+
+        DataManager dm = getInstance();
+        dm.mCourses.clear();
+
+        while (courseCursor.moveToNext()){
+            String courseId = courseCursor.getString(courseIdPos);
+            String courseTitle = courseCursor.getString(courseTitlePos);
+
+            CourseInfo course = new CourseInfo(courseId,courseTitle,null);
+            dm.mCourses.add(course);
+        }
+        //close cursor
+        courseCursor.close();
+
+    }
+
     public String getCurrentUserName() {
-        return "Jim Wilson";
+        return "ol4juwon";
     }
 
     public String getCurrentUserEmail() {
-        return "jimw@jwhh.com";
+        return "olajuwonlawal2012@gmail.com";
     }
 
     public List<NoteInfo> getNotes() {
@@ -33,7 +113,7 @@ public class DataManager {
     public int createNewNote() {
         NoteInfo note = new NoteInfo(null, null, null);
         mNotes.add(note);
-        return mNotes.size() - 1;
+        return mNotes.size() ;
     }
 
     public int findNote(NoteInfo note) {
